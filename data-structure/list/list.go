@@ -45,7 +45,22 @@ func (n *Node) BelongsTo(l *List) bool {
 type List struct {
 	head *Node
 	tail *Node
-	Len  int
+	len  int
+}
+
+// Len 获取链表长度
+func (l *List) Len() int {
+	return l.len
+}
+
+// Head 获取链表头部
+func (l *List) Head() *Node {
+	return l.head
+}
+
+// Tail 获取链表尾部
+func (l *List) Tail() *Node {
+	return l.tail
 }
 
 // Append 向单向链表中添加一个元素
@@ -53,11 +68,7 @@ type List struct {
 // O(1)
 func (l *List) Append(data interface{}, n ...*Node) (*Node, error) {
 	nn := &Node{Data: data, list: l}
-	if l.head == nil {
-		// 列表为空
-		l.head = nn
-		l.tail = nn
-	} else if len(n) == 1 {
+	if len(n) > 0 {
 		if n[0].list != l {
 			return nil, ErrNotFound
 		}
@@ -69,12 +80,16 @@ func (l *List) Append(data interface{}, n ...*Node) (*Node, error) {
 		}
 		nn.next = el.next
 		el.next = nn
+	} else if l.head == nil {
+		// 列表为空
+		l.head = nn
+		l.tail = nn
 	} else {
 		// 插入到尾部
 		l.tail.next = nn
 		l.tail = nn
 	}
-	l.Len++
+	l.len++
 	return nn, nil
 }
 
@@ -100,7 +115,7 @@ func (l *List) Remove(n *Node) error {
 		}
 		n.list = nil
 		n.next = nil
-		l.Len--
+		l.len--
 		return nil
 	}
 
@@ -113,7 +128,7 @@ func (l *List) Remove(n *Node) error {
 			cur.next = n.next
 			n.list = nil
 			n.next = nil
-			l.Len--
+			l.len--
 			return nil
 		}
 		cur = cur.next
@@ -125,7 +140,7 @@ func (l *List) Remove(n *Node) error {
 // Each 遍历链表
 // O(n)
 func (l *List) Each(iteratee func(data interface{}, index int) (stop bool)) {
-	if l.Len == 0 {
+	if l.len == 0 {
 		return
 	}
 	cur := l.head

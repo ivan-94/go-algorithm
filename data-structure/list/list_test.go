@@ -8,8 +8,8 @@ func TestListAppend(t *testing.T) {
 	l := New()
 	h, _ := l.Append("hello")
 
-	if l.Len != 1 {
-		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 1, l.Len)
+	if l.Len() != 1 {
+		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 1, l.Len())
 	}
 
 	if l.head.Data != "hello" {
@@ -22,8 +22,8 @@ func TestListAppend(t *testing.T) {
 
 	n, _ := l.Append("world")
 
-	if l.Len != 2 {
-		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 2, l.Len)
+	if l.Len() != 2 {
+		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 2, l.Len())
 	}
 
 	if l.head.next.Data != "world" {
@@ -31,8 +31,8 @@ func TestListAppend(t *testing.T) {
 	}
 
 	nn, _ := n.Append("foo")
-	if l.Len != 3 {
-		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 3, l.Len)
+	if l.Len() != 3 {
+		t.Errorf("链表长度有误, 期望%d, 实际上是%d", 3, l.Len())
 	}
 
 	if l.tail != nn {
