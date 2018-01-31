@@ -123,13 +123,13 @@ func (l *DList) Remove(n *DNode) error {
 }
 
 // Each 顺序迭代
-func (l *DList) Each(it func(data interface{}, index int) bool) {
+func (l *DList) Each(it func(node *DNode, index int) bool) {
 	if l.len == 0 {
 		return
 	}
 	cur, i := l.head, 0
 	for cur != nil {
-		stop := it(cur.Data, i)
+		stop := it(cur, i)
 		if stop {
 			break
 		}
@@ -139,13 +139,13 @@ func (l *DList) Each(it func(data interface{}, index int) bool) {
 }
 
 // RvEach 反序迭代
-func (l *DList) RvEach(it func(data interface{}, index int) bool) {
+func (l *DList) RvEach(it func(node *DNode, index int) bool) {
 	if l.len == 0 {
 		return
 	}
 	cur, i := l.tail, 0
 	for cur != nil {
-		stop := it(cur.Data, i)
+		stop := it(cur, i)
 		if stop {
 			break
 		}

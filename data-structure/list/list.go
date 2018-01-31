@@ -139,14 +139,14 @@ func (l *List) Remove(n *Node) error {
 
 // Each 遍历链表
 // O(n)
-func (l *List) Each(iteratee func(data interface{}, index int) (stop bool)) {
+func (l *List) Each(iteratee func(node *Node, index int) (stop bool)) {
 	if l.len == 0 {
 		return
 	}
 	cur := l.head
 	i := 0
 	for cur != nil {
-		if ret := iteratee(cur.Data, i); ret {
+		if ret := iteratee(cur, i); ret {
 			break
 		}
 		cur = cur.next

@@ -62,8 +62,8 @@ func TestListEach(t *testing.T) {
 	n.Append(4)
 	var act [4]int
 	exp := [...]int{1, 2, 4, 3}
-	l.Each(func(d interface{}, i int) bool {
-		v := d.(int)
+	l.Each(func(node *Node, i int) bool {
+		v := node.Data.(int)
 		act[i] = v
 		return false
 	})
