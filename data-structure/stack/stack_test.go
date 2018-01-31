@@ -22,4 +22,8 @@ func TestStack(t *testing.T) {
 	if s.Pop() != 1 {
 		t.Errorf("栈弹出异常, 没有按插入顺序返回")
 	}
+
+	if s.Pop() != nil {
+		t.Errorf("栈弹出异常, 空栈弹出应该为nil")
+	}
 }
