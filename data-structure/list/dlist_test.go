@@ -61,7 +61,7 @@ func TestDListPrepend(t *testing.T) {
 	}
 }
 
-func TestDListReove(t *testing.T) {
+func TestDListRemove(t *testing.T) {
 	l := NewDList()
 	foo, _ := l.Append("1")
 	bar, _ := l.Append("2")

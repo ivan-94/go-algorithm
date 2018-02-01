@@ -1,29 +1,35 @@
-// Package set使用链表的形式来实现集合方法
+// Package set 使用链表的形式来实现集合方法
 package set
 
 import (
+	"errors"
+
 	"github.com/carney520/go-algorithm/data-structure/list"
 )
 
+// 错误码
 var (
 	ErrConflict = errors.New("元素已存在")
+	ErrNotFound = errors.New("元素不存在")
 )
 
+// Comparator 比较函数类型
 type Comparator = func(a, b interface{}) bool
+
+// Set 表示集合类型
 type Set struct {
-	list *list.List
+	list       *list.List
 	comparator Comparator
 }
 
-
-func (s *Set) find(v interface{}) (ret interface{}) {
+func (s *Set) find(v interface{}) (ret *list.Node) {
 	if s.list.Len() == 0 {
 		return
 	}
-	
-	s.list.Each(func(val interface, index int) bool {
-		if s.comparator(v, val) {
-			ret = val
+
+	s.list.Each(func(node *list.Node, index int) bool {
+		if s.comparator(v, node.Data) {
+			ret = node
 			return true
 		}
 		return false
@@ -31,20 +37,162 @@ func (s *Set) find(v interface{}) (ret interface{}) {
 	return
 }
 
-func (s *Set) Insert(data interface) error {
+// Insert 插入一个新成员
+func (s *Set) Insert(data interface{}) error {
 	if s.find(data) == nil {
 		s.list.Append(data)
 		return nil
 	}
-	return
+	return ErrConflict
 }
 
+// Has 判断成员是否存在
+func (s *Set) Has(data interface{}) bool {
+	return s.find(data) != nil
+}
+
+// Remove 移除成员
+func (s *Set) Remove(data interface{}) error {
+	n := s.find(data)
+	if n != nil {
+		// remove
+		s.list.Remove(n)
+		return nil
+	}
+	return ErrNotFound
+}
+
+// Len 返回集合的成员数
+func (s *Set) Len() int {
+	return s.list.Len()
+}
+
+// Clone 克隆一个新集合
+func (s *Set) Clone() *Set {
+	ns := New(s.comparator)
+	if s.Len() == 0 {
+		return ns
+	}
+	s.list.Each(func(node *list.Node, index int) bool {
+		ns.list.Append(node.Data)
+		return false
+	})
+	return ns
+}
+
+// Equal 比较两个集合是否相等
+func (s *Set) Equal(v *Set) bool {
+	if s.Len() != v.Len() {
+		return false
+	}
+
+	if s.Len() == 0 {
+		return true
+	}
+
+	eq := true
+	s.list.Each(func(node *list.Node, index int) bool {
+		if !v.Has(node.Data) {
+			eq = false
+			return true
+		}
+		return false
+	})
+	return eq
+}
+
+// Each 迭代集合
+func (s *Set) Each(it func(data interface{}) (stop bool)) {
+	s.list.Each(func(n *list.Node, i int) bool {
+		return it(n.Data)
+	})
+}
+
+// Union 并集
+func (s *Set) Union(v *Set) *Set {
+	if s == v {
+		return s
+	}
+	rt := s.Clone()
+	v.Each(func(data interface{}) bool {
+		rt.Insert(data)
+		return false
+	})
+	return rt
+}
+
+// Intersection 求交集
+func (s *Set) Intersection(v *Set) *Set {
+	n := New(s.comparator)
+	if s.Len() == 0 || v.Len() == 0 {
+		return n
+	}
+	mins, maxs := s, v
+	if s.Len() > v.Len() {
+		mins, maxs = v, s
+	}
+
+	mins.Each(func(data interface{}) bool {
+		if maxs.Has(data) {
+			n.list.Append(data)
+		}
+		return false
+	})
+	return n
+}
+
+// Diff 差集
+func (s *Set) Diff(v *Set) *Set {
+	n := New(s.comparator)
+	if s.Len() == 0 {
+		return n
+	} else if v.Len() == 0 {
+		return s.Clone()
+	}
+
+	s.Each(func(data interface{}) bool {
+		if !v.Has(data) {
+			n.list.Append(data)
+		}
+		return false
+	})
+	return n
+}
+
+// Subset 检查v是否是s的子集
+func (s *Set) Subset(v *Set) bool {
+	if v.Len() == 0 {
+		return true
+	}
+	if v.Len() > s.Len() {
+		return false
+	}
+	rt := true
+	v.Each(func(data interface{}) bool {
+		if !s.Has(data) {
+			rt = false
+			return true
+		}
+		return false
+	})
+	return true
+}
+
+// DefaultMatch 默认的比较函数
 func DefaultMatch(a, b interface{}) bool {
 	return a == b
 }
 
-func New(match Comparator) *Set{
-	return &Set{
-		list: list.New()
+// New 创建一个新集合
+func New(match Comparator, mbs ...interface{}) *Set {
+	s := &Set{
+		list:       list.New(),
+		comparator: match,
 	}
+	if len(mbs) > 0 {
+		for _, v := range mbs {
+			s.Insert(v)
+		}
+	}
+	return s
 }
