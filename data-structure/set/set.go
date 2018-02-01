@@ -3,6 +3,8 @@ package set
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/carney520/go-algorithm/data-structure/list"
 )
@@ -102,9 +104,12 @@ func (s *Set) Equal(v *Set) bool {
 }
 
 // Each 迭代集合
-func (s *Set) Each(it func(data interface{}) (stop bool)) {
-	s.list.Each(func(n *list.Node, i int) bool {
-		return it(n.Data)
+func (s *Set) Each(it func(data interface{}, i int) (stop bool)) {
+	i := 0
+	s.list.Each(func(n *list.Node, _ int) bool {
+		rt := it(n.Data, i)
+		i++
+		return rt
 	})
 }
 
@@ -114,7 +119,7 @@ func (s *Set) Union(v *Set) *Set {
 		return s
 	}
 	rt := s.Clone()
-	v.Each(func(data interface{}) bool {
+	v.Each(func(data interface{}, i int) bool {
 		rt.Insert(data)
 		return false
 	})
@@ -132,7 +137,7 @@ func (s *Set) Intersection(v *Set) *Set {
 		mins, maxs = v, s
 	}
 
-	mins.Each(func(data interface{}) bool {
+	mins.Each(func(data interface{}, i int) bool {
 		if maxs.Has(data) {
 			n.list.Append(data)
 		}
@@ -150,7 +155,7 @@ func (s *Set) Diff(v *Set) *Set {
 		return s.Clone()
 	}
 
-	s.Each(func(data interface{}) bool {
+	s.Each(func(data interface{}, i int) bool {
 		if !v.Has(data) {
 			n.list.Append(data)
 		}
@@ -168,7 +173,7 @@ func (s *Set) Subset(v *Set) bool {
 		return false
 	}
 	rt := true
-	v.Each(func(data interface{}) bool {
+	v.Each(func(data interface{}, i int) bool {
 		if !s.Has(data) {
 			rt = false
 			return true
@@ -176,6 +181,16 @@ func (s *Set) Subset(v *Set) bool {
 		return false
 	})
 	return true
+}
+
+// String 实现fmt.Stringer 接口
+func (s *Set) String() string {
+	members := make([]string, s.Len())
+	s.Each(func(data interface{}, index int) bool {
+		members[index] = fmt.Sprint(data)
+		return false
+	})
+	return fmt.Sprintf("Set{%s}", strings.Join(members, ", "))
 }
 
 // DefaultMatch 默认的比较函数
