@@ -27,40 +27,46 @@ type item struct {
 }
 
 // 查找
-func (h *ChHash) lookup(key Hasher) *item {
+func (h *ChHash) lookup(key Hasher) (entry *item, node *list.Node, bucket *list.List) {
 	// 找到桶的索引
 	i := key.hash() % h.count
-	bucket := h.table[i]
+	bucket = h.table[i]
 	var data *item
-	bucket.Each(func(node *list.Node, index int) bool {
-		val, ok := node.Data.(*item)
+	bucket.Each(func(n *list.Node, index int) bool {
+		val, ok := n.Data.(*item)
 		if ok {
 			if val.key == key {
 				data = val
+				node = n
 				return true
 			}
 		}
 		return false
 	})
 
-	return data
+	return data, node, bucket
 }
 
 // Get 从hash中获取数据
 func (h *ChHash) Get(key Hasher) (val interface{}, ok bool) {
-	i := h.lookup(key)
+	i, _, _ := h.lookup(key)
 	if i != nil {
 		return i.val, true
 	}
 	return nil, false
 }
 
+// Delete 删除指定键
 func (h *ChHash) Delete(key Hasher) {
+	i, node, bucket := h.lookup(key)
+	if i != nil {
+		bucket.Remove(node)
+	}
 }
 
 // Set 存储一个值
 func (h *ChHash) Set(key Hasher, val interface{}) {
-	i := h.lookup(key)
+	i, _, _ := h.lookup(key)
 	if i != nil {
 		i.val = val
 		return

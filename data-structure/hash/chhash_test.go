@@ -18,4 +18,10 @@ func TestChHash(t *testing.T) {
 	if val != 5 {
 		t.Error("Hash表异常， 无法重新设置值")
 	}
+
+	hash.Delete(StringHashFunc("One"))
+	val, ok = hash.Get(StringHashFunc("One"))
+	if ok {
+		t.Error("Hash表异常， 删除失败")
+	}
 }
