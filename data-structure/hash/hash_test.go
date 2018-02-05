@@ -14,7 +14,27 @@ var tests = []struct {
 }
 
 func TestChHash(t *testing.T) {
-	hash := NewChHash(16)
+	hash := NewChHash(5)
+	testInsertDelete(hash, t)
+}
+
+func TestOHash(t *testing.T) {
+	hash := NewOHash(5)
+	testInsertDelete(hash, t)
+}
+
+func TestOHashExceedInsert(t *testing.T) {
+	h := NewOHash(5)
+	for _, val := range tests {
+		h.Set(StringHashFunc(val.key), val.val)
+	}
+	err := h.Set(StringHashFunc("six"), 12)
+	if err != ErrBucketFull {
+		t.Error("OHash 插入异常， 队列已满, 不能再插入")
+	}
+}
+
+func testInsertDelete(hash Tabler, t *testing.T) {
 	for _, data := range tests {
 		func() {
 			k := StringHashFunc(data.key)

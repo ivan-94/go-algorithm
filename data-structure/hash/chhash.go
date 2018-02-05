@@ -14,6 +14,14 @@ type Hasher interface {
 	hash() int
 }
 
+// Tabler 表示不同类型hash表需要实现的方法
+type Tabler interface {
+	Get(key Hasher) (val interface{}, ok bool)
+	Set(key Hasher, val interface{}) error
+	Len() int
+	Delete(key Hasher)
+}
+
 // ChHash 表示链式hash表
 type ChHash struct {
 	count int          // 桶数量
@@ -71,7 +79,7 @@ func (h *ChHash) Delete(key Hasher) {
 }
 
 // Set 存储一个值
-func (h *ChHash) Set(key Hasher, val interface{}) {
+func (h *ChHash) Set(key Hasher, val interface{}) (err error) {
 	i, _, _ := h.lookup(key)
 	if i != nil {
 		i.val = val
@@ -84,6 +92,7 @@ func (h *ChHash) Set(key Hasher, val interface{}) {
 	i.val = val
 	bucket.Append(i)
 	h.len++
+	return
 }
 
 // NewChHash 创建一个链式哈希表
