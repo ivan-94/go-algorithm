@@ -56,11 +56,17 @@ func (h *ChHash) Get(key Hasher) (val interface{}, ok bool) {
 	return nil, false
 }
 
+// Len 获取hash的数据项数量
+func (h *ChHash) Len() int {
+	return h.len
+}
+
 // Delete 删除指定键
 func (h *ChHash) Delete(key Hasher) {
 	i, node, bucket := h.lookup(key)
 	if i != nil {
 		bucket.Remove(node)
+		h.len--
 	}
 }
 
@@ -77,6 +83,7 @@ func (h *ChHash) Set(key Hasher, val interface{}) {
 	i.key = key
 	i.val = val
 	bucket.Append(i)
+	h.len++
 }
 
 // NewChHash 创建一个链式哈希表
