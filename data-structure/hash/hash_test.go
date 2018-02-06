@@ -1,6 +1,9 @@
 package hash
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 var tests = []struct {
 	key string
@@ -23,6 +26,11 @@ func TestOHash(t *testing.T) {
 	testInsertDelete(hash, t)
 }
 
+func TestGrowHashInsert(t *testing.T) {
+	hash := NewGrowHash()
+	testInsertDelete(hash, t)
+}
+
 func TestOHashExceedInsert(t *testing.T) {
 	h := NewOHash(5)
 	for _, val := range tests {
@@ -31,6 +39,39 @@ func TestOHashExceedInsert(t *testing.T) {
 	err := h.Set(StringHashFunc("six"), 12)
 	if err != ErrBucketFull {
 		t.Error("OHash 插入异常， 队列已满, 不能再插入")
+	}
+}
+
+func TestGrowHash(t *testing.T) {
+	keys := []string{}
+	for i := 0; i < 60; i++ {
+		keys = append(keys, fmt.Sprint(i))
+	}
+	h := NewGrowHash()
+	// set
+	for i, key := range keys {
+		h.Set(StringHashFunc(key), key)
+		if h.Len() != i+1 {
+			t.Errorf("GrowHash 插入失败，长度没有变化, 期望%d, 实际上是 %d\n", i+1, h.Len())
+		}
+	}
+
+	if h.count != 16 {
+		t.Errorf("GrowHash 自动增长失败, 期望容量为%d, 实际上是 %d\n", 16, h.count)
+	}
+
+	// reset
+	for _, key := range keys {
+		val := key + "++"
+		h.Set(StringHashFunc(key), val)
+		data, ok := h.Get(StringHashFunc(key))
+		if !ok || data != val {
+			t.Errorf("GrowHash 赋值失败, 期望结果%s, 实际上是 %s\n", val, data)
+		}
+	}
+
+	if h.count != 16 || h.oldbuckets != nil {
+		t.Errorf("排空失败")
 	}
 }
 
