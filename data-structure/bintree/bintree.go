@@ -82,6 +82,7 @@ func (t *BinTree) remove(dir string, node ...*Node) (*Node, error) {
 		if (dir == "left" && el.left == nil) || (dir == "right" && el.right == nil) {
 			return nil, ErrRemoved
 		}
+
 		if dir == "left" {
 			removed = el.left
 			el.left = nil
@@ -89,6 +90,9 @@ func (t *BinTree) remove(dir string, node ...*Node) (*Node, error) {
 			removed = el.right
 			el.right = nil
 		}
+		// 递归删除子节点
+		t.remove("left", removed)
+		t.remove("right", removed)
 	} else {
 		// remove from root
 		if t.root != nil && t.root.left == nil && t.root.right == nil {
@@ -112,6 +116,16 @@ func (t *BinTree) RmRight(node ...*Node) (*Node, error) {
 	return t.remove("right", node...)
 }
 
+// Clear 清空二叉树
+func (t *BinTree) Clear() {
+	if t.root == nil {
+		return
+	}
+	t.remove("left", t.root)
+	t.remove("right", t.root)
+	t.remove("left")
+}
+
 // InsLeft 插入左节点, 如果没有给定节点, 则插入到根节点
 func (t *BinTree) InsLeft(data interface{}, node ...*Node) (*Node, error) {
 	return t.insert("left", data, node...)
@@ -125,4 +139,13 @@ func (t *BinTree) InsRight(data interface{}, node ...*Node) (*Node, error) {
 // Len 获取节点树
 func (t *BinTree) Len() int {
 	return t.len
+}
+
+// Merge合并两棵树，并返回一颗新的树
+func Merge(a *BinTree, b *BinTree, data interface{}) *BinTree {
+	tree := &BinTree{}
+	tree.InsLeft(data)
+	tree.root.left = a.root
+	tree.root.right = b.root
+	return tree
 }
