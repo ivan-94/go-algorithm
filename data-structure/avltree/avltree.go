@@ -37,6 +37,67 @@ func New(compare Comparation) *AVLTree {
 	}
 }
 
+// Len 获取AVL树元素长度
+func (t *AVLTree) Len() int {
+	return t.len
+}
+
+// Lookup 查找
+func (t *AVLTree) Lookup(data interface{}) (n *Node, ok bool) {
+	if t.root == nil {
+		return nil, false
+	}
+
+	return t.lookup(data, t.root)
+}
+
+func (t *AVLTree) lookup(data interface{}, n *Node) (*Node, bool) {
+	if n == nil {
+		return nil, false
+	}
+	compval := t.compare(data, n.data)
+	if compval > 0 {
+		return t.lookup(data, n.right)
+	} else if compval < 0 {
+		return t.lookup(data, n.left)
+	} else if !n.hidden {
+		return n, true
+	}
+	return nil, false
+}
+
+// Remove 移除一个节点
+func (t *AVLTree) Remove(data interface{}) {
+	if t.root == nil {
+		return
+	}
+	n, ok := t.lookup(data, t.root)
+	if ok && !n.hidden {
+		t.len--
+		n.hidden = true
+	}
+}
+
+// Clear 释放树
+func (t *AVLTree) Clear() {
+	if t.root == nil {
+		return
+	}
+	t.clear(&t.root)
+}
+
+func (t *AVLTree) clear(node **Node) {
+	if *node == nil {
+		return
+	}
+	if !(*node).hidden {
+		t.len--
+	}
+	t.clear(&(*node).left)
+	t.clear(&(*node).right)
+	*node = nil
+}
+
 // Insert 插入数据
 func (t *AVLTree) Insert(data interface{}) {
 	if t.root == nil {
@@ -61,6 +122,7 @@ func (t *AVLTree) insert(data interface{}, n **Node) (balance bool) {
 			// 直接插入
 			node.right = &Node{data: data}
 			balance = false
+			t.len++
 		} else {
 			// 向下递归
 			balance = t.insert(data, &node.right)
@@ -88,6 +150,7 @@ func (t *AVLTree) insert(data interface{}, n **Node) (balance bool) {
 			// 直接插入
 			node.left = &Node{data: data}
 			balance = false
+			t.len++
 		} else {
 			balance = t.insert(data, &node.left)
 		}
@@ -107,7 +170,9 @@ func (t *AVLTree) insert(data interface{}, n **Node) (balance bool) {
 
 	} else if node.hidden {
 		// 相等， 判断是否当前节点是否已经删除， 如果已经删除， 则标记为未删除
+		node.data = data
 		node.hidden = false
+		t.len++
 	}
 
 	return
